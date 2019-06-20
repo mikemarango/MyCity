@@ -11,6 +11,7 @@ namespace City.Data
     {
         public CityContext(DbContextOptions<CityContext> options) : base(options)
         {
+            Database.EnsureCreated();
         }
 
         public DbSet<Citi> Cities { get; set; }

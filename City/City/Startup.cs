@@ -12,6 +12,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using City.Repositories;
+using AutoMapper;
 
 namespace City
 {
@@ -29,7 +31,9 @@ namespace City
         {
             services.AddControllers();
             services.AddDbContext<CityContext>(options =>
-                options.UseInMemoryDatabase("CityTable"));
+                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddScoped<ICityRepository, CityRepository>();
+            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

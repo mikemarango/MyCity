@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using City.Data;
 using City.Models;
 using City.DTOs;
+using City.Repositories;
+using AutoMapper;
 
 namespace City.Controllers
 {
@@ -15,108 +17,38 @@ namespace City.Controllers
     [ApiController]
     public class CitiesController : ControllerBase
     {
-        private readonly CityContext _context;
+        public ICityRepository Repository { get; }
+        public IMapper Mapper { get; }
 
-        public CitiesController(CityContext context)
+        public CitiesController(ICityRepository repository, IMapper mapper)
         {
-            _context = context;
+            Repository = repository;
+            Mapper = mapper;
         }
 
         // GET: api/Cities
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<CityDto>>> GetCities()
+        public async Task<ActionResult<IEnumerable<CitiNoAttractionDto>>> GetCities()
         {
-            var citiDto = _context.Cities.Select(c => new CityDto
-            {
-                ID = c.ID,
-                Name = c.Name,
-                Description = c.Description
-            });
-
-            return await citiDto.ToListAsync();
+            var cities = await Repository.GetCitiesAsync();
+            var citiesNoAttractionDto = Mapper.Map<IEnumerable<CitiNoAttractionDto>>(cities);
+            return citiesNoAttractionDto.ToList();
         }
 
         // GET: api/Cities/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<CityDto>> GetCiti(int id, bool includeAttraction)
+        public async Task<ActionResult<object>> GetCiti(int id, bool includeAttractions = false)
         {
-
-            var citi = await _context.Cities.FindAsync(id);
-
+            var citi = await Repository.GetCitiAsync(id, includeAttractions);
             if (citi == null)
-            {
                 return NotFound();
-            }
-
-            var citiDto = new CityDto()
+            if (includeAttractions)
             {
-                ID = citi.ID,
-                Name = citi.Name,
-                Description = citi.Description
-            };
-
-            return citiDto;
-        }
-
-        // PUT: api/Cities/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutCiti(int id, Citi citi)
-        {
-            if (id != citi.ID)
-            {
-                return BadRequest();
+                var citiWithAttraction = Mapper.Map<CitiDto>(citi);
+                return citiWithAttraction;
             }
-
-            _context.Entry(citi).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!CitiExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
-        // POST: api/Cities
-        [HttpPost]
-        public async Task<ActionResult<Citi>> PostCiti(Citi citi)
-        {
-            _context.Cities.Add(citi);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetCiti", new { id = citi.ID }, citi);
-        }
-
-        // DELETE: api/Cities/5
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<Citi>> DeleteCiti(int id)
-        {
-            var citi = await _context.Cities.FindAsync(id);
-            if (citi == null)
-            {
-                return NotFound();
-            }
-
-            _context.Cities.Remove(citi);
-            await _context.SaveChangesAsync();
-
-            return citi;
-        }
-
-        private bool CitiExists(int id)
-        {
-            return _context.Cities.Any(e => e.ID == id);
+            var citiWithoutAttraction = Mapper.Map<CitiNoAttractionDto>(citi);
+            return citiWithoutAttraction;
         }
     }
 }

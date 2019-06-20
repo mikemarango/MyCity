@@ -10,6 +10,6 @@ namespace City.Models
         public int ID { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        public ICollection<Attraction> Attractions { get; set; }
+        public ICollection<Attraction> Attractions { get; set; } = new List<Attraction>();
     }
 }

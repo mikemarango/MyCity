@@ -10,6 +10,6 @@ namespace City.DTOs
         public int ID { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        public ICollection<AttractionDto> AttractionDtos { get; set; } = new List<AttractionDto>();
+        public ICollection<AttractionDto> Attractions { get; set; } = new List<AttractionDto>();
     }
 }
