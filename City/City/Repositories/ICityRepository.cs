@@ -8,6 +8,7 @@ namespace City.Repositories
     {
         Task<bool> CitiExistsAsync(int citiId);
         Task CreateAttractionAsync(int citiId, Attraction attraction);
+        Task UpdateAttractionAsync(Attraction attraction);
         Task DeleteAttractionAsync(Attraction attraction);
         Task<Attraction> GetAttractionAsync(int citiId, int id);
         Task<IEnumerable<Attraction>> GetAttractionsAsync(int citiId);

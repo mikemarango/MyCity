@@ -55,6 +55,12 @@ namespace City.Repositories
             await Context.SaveChangesAsync();
         }
 
+        public async Task UpdateAttractionAsync(Attraction attraction)
+        {
+            Context.Attractions.Update(attraction);
+            await Context.SaveChangesAsync();
+        }
+
         public async Task DeleteAttractionAsync(Attraction attraction)
         {
             Context.Attractions.Remove(attraction);

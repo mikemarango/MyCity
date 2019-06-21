@@ -7,6 +7,7 @@ using City.DTOs;
 using City.Models;
 using City.Repositories;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 
 namespace City.Controllers
@@ -23,7 +24,7 @@ namespace City.Controllers
             Repository = repository;
             Mapper = mapper;
         }
-        // GET: api/Attractions
+
         [HttpGet()]
         public async Task<ActionResult<IEnumerable<AttractionDto>>> GetAttractionsAsync(int citiId)
         {
@@ -37,7 +38,6 @@ namespace City.Controllers
             return attractionsDto;
         }
 
-        // GET: api/Attractions/5
         [HttpGet("{id}", Name = "GetAttraction")]
         public async Task<ActionResult<AttractionDto>> GetAttractionAsync(int citiId, int id)
         {
@@ -54,7 +54,6 @@ namespace City.Controllers
             return attractionDto;
         }
 
-        // POST: api/Attractions
         [HttpPost]
         public async Task<ActionResult> Post(int citiId, [FromBody] AttractionCreateDto attractionCreateDto)
         {
@@ -74,16 +73,63 @@ namespace City.Controllers
 
         }
 
-        // PUT: api/Attractions/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        public async Task<ActionResult> PutAsync(int citiId, int id, [FromBody] AttractionUpdateDto attractionUpdateDto)
         {
+            if (citiId == 0 || id == 0 || attractionUpdateDto == null)
+                return BadRequest();
+
+            if (!ModelState.IsValid)
+                return UnprocessableEntity(ModelState);
+
+            var attraction = await Repository.GetAttractionAsync(citiId, id);
+
+            if (attraction == null)
+                return NotFound();
+
+            Mapper.Map(attractionUpdateDto, attraction);
+
+            await Repository.UpdateAttractionAsync(attraction);
+
+            return NoContent();
         }
 
-        // DELETE: api/ApiWithActions/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+        [HttpPatch("{id}")]
+        public async Task<ActionResult> PatchAsync(int citiId, int id, [FromBody]JsonPatchDocument<AttractionUpdateDto> patchDocument)
         {
+            if (patchDocument == null)
+                return BadRequest();
+
+            if (!await Repository.CitiExistsAsync(citiId))
+                return NotFound();
+
+            var attraction = await Repository.GetAttractionAsync(citiId, id);
+
+            if (attraction == null)
+                return NotFound();
+
+            var attractionUpdateDto = Mapper.Map<AttractionUpdateDto>(attraction);
+
+            patchDocument.ApplyTo(attractionUpdateDto);
+
+            Mapper.Map(attraction, attractionUpdateDto);
+
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> DeleteAsync(int citiId, int id)
+        {
+            if (!await Repository.CitiExistsAsync(citiId))
+                return NotFound();
+
+            var attraction = await Repository.GetAttractionAsync(citiId, id);
+
+            if (attraction == null) return NotFound();
+
+            await Repository.DeleteAttractionAsync(attraction);
+
+            return NoContent();
         }
     }
 }
