@@ -31,6 +31,7 @@ namespace City.Controllers
         public async Task<ActionResult<IEnumerable<CitiNoAttractionDto>>> GetCities()
         {
             var cities = await Repository.GetCitiesAsync();
+            //var citiesNoAttractionDto = Mapper.Map<IEnumerable<CitiNoAttractionDto>>(cities);
             var citiesNoAttractionDto = Mapper.Map<IEnumerable<CitiNoAttractionDto>>(cities);
             return citiesNoAttractionDto.ToList();
         }

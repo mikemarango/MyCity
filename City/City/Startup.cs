@@ -49,6 +49,8 @@ namespace City
                 app.UseHsts();
             }
 
+            app.UseStatusCodePages();
+
             app.UseHttpsRedirection();
 
             app.UseRouting();

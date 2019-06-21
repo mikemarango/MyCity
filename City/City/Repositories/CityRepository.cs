@@ -52,12 +52,18 @@ namespace City.Repositories
         {
             var city = await GetCitiAsync(citiId, false);
             city.Attractions.Add(attraction);
+            await Context.SaveChangesAsync();
         }
 
         public async Task DeleteAttractionAsync(Attraction attraction)
         {
             Context.Attractions.Remove(attraction);
             await Context.SaveChangesAsync();
+        }
+
+        public async Task<bool> CitiExistsAsync(int citiId)
+        {
+            return await Context.Cities.AnyAsync(c => c.ID == citiId);
         }
     }
 }

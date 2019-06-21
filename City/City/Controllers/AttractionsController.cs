@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using City.DTOs;
+using City.Models;
 using City.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -26,7 +27,11 @@ namespace City.Controllers
         [HttpGet()]
         public async Task<ActionResult<IEnumerable<AttractionDto>>> GetAttractionsAsync(int citiId)
         {
+            if (!await Repository.CitiExistsAsync(citiId))
+                return BadRequest();
             var attractions = await Repository.GetAttractionsAsync(citiId);
+            if (attractions == null)
+                return NotFound();
             var attractionsDto = Mapper.Map<IEnumerable<AttractionDto>>(attractions)
                 .ToList();
             return attractionsDto;
@@ -36,6 +41,9 @@ namespace City.Controllers
         [HttpGet("{id}", Name = "GetAttraction")]
         public async Task<ActionResult<AttractionDto>> GetAttractionAsync(int citiId, int id)
         {
+            if (!await Repository.CitiExistsAsync(citiId))
+                return BadRequest();
+
             var attraction = await Repository.GetAttractionAsync(citiId, id);
 
             if (attraction == null)
@@ -48,8 +56,22 @@ namespace City.Controllers
 
         // POST: api/Attractions
         [HttpPost]
-        public void Post([FromBody] string value)
+        public async Task<ActionResult> Post(int citiId, [FromBody] AttractionCreateDto attractionCreateDto)
         {
+            if (citiId == 0 || attractionCreateDto == null)
+                return BadRequest();
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var attraction = Mapper.Map<Attraction>(attractionCreateDto);
+
+            await Repository.CreateAttractionAsync(citiId, attraction);
+
+            var attractionDto = Mapper.Map<AttractionDto>(attraction);
+
+            return CreatedAtRoute("GetAttraction", new { citiId, id = attraction.ID }, attractionDto);
+
         }
 
         // PUT: api/Attractions/5

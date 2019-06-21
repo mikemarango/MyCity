@@ -6,6 +6,7 @@ namespace City.Repositories
 {
     public interface ICityRepository
     {
+        Task<bool> CitiExistsAsync(int citiId);
         Task CreateAttractionAsync(int citiId, Attraction attraction);
         Task DeleteAttractionAsync(Attraction attraction);
         Task<Attraction> GetAttractionAsync(int citiId, int id);
